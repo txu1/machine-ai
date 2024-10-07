@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spinner Wheel</title>
+  <style>body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  margin-top: 50px;
+}
+
+.input-section {
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 8px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+.names-list {
+  margin-bottom: 30px;
+}
+
+.names-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.names-list li {
+  font-size: 18px;
+  padding: 5px 0;
+}
+
+.wheel-section {
+  margin-bottom: 20px;
+}
+
+#wheelCanvas {
+  border: 2px solid #333;
+}
+
+#result {
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+}</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Random Name Picker</h1>
+
+    <div class="input-section">
+      <input type="text" id="nameInput" placeholder="Enter a name">
+      <button id="addName">Add Name</button>
+    </div>
+
+    <div class="names-list">
+      <h2>Names:</h2>
+      <ul id="nameList"></ul>
+    </div>
+
+    <div class="wheel-section">
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      <button id="spinButton">Spin the Wheel</button>
+    </div>
+
+    <p id="result"></p>
+  </div>
+
+  <script>const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+const spinButton = document.getElementById('spinButton');
+const nameInput = document.getElementById('nameInput');
+const addNameButton = document.getElementById('addName');
+const nameList = document.getElementById('nameList');
+const resultText = document.getElementById('result');
+
+let names = [];
+let startAngle = 0;
+let arcSize;
+let spinTimeout = null;
+
+// Add new name to the list
+addNameButton.addEventListener('click', function() {
+  const newName = nameInput.value.trim();
+  if (newName && !names.includes(newName)) {
+    names.push(newName);
+    updateNameList();
+    drawWheel();
+  }
+  nameInput.value = ''; // Clear input
+});
+
+// Update the displayed list of names
+function updateNameList() {
+  nameList.innerHTML = '';
+  names.forEach((name, index) => {
+    const li = document.createElement('li');
+    li.textContent = name;
+    nameList.appendChild(li);
+  });
+}
+
+// Draw the wheel
+function drawWheel() {
+  const numOfNames = names.length;
+  if (numOfNames === 0) return;
+
+  arcSize = (2 * Math.PI) / numOfNames;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < numOfNames; i++) {
+    const angle = startAngle + i * arcSize;
+    drawSegment(i, angle);
+  }
+
+  // Draw the wheel pointer
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, 0);
+  ctx.lineTo(canvas.width / 2 - 10, 20);
+  ctx.lineTo(canvas.width / 2 + 10, 20);
+  ctx.closePath();
+  ctx.fillStyle = '#333';
+  ctx.fill();
+}
+
+// Draw each segment of the wheel
+function drawSegment(index, angle) {
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, canvas.height / 2);
+  ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, angle, angle + arcSize);
+  ctx.lineTo(canvas.width / 2, canvas.height / 2);
+
+  ctx.fillStyle = index % 2 === 0 ? '#fbc531' : '#e1b12c';
+  ctx.fill();
+
+  // Draw the name
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(angle + arcSize / 2);
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#000";
+  ctx.font = "bold 14px Arial";
+  ctx.fillText(names[index], canvas.width / 2 - 10, 10);
+  ctx.restore();
+}
+
+// Spin the wheel
+function spinWheel() {
+  const spinAngle = Math.random() * 10 + 10;
+  const spinTime = Math.random() * 3000 + 2000;
+
+  const rotateWheel = () => {
+    startAngle += spinAngle * Math.PI / 180;
+    drawWheel();
+
+    if (spinTime > 0) {
+      spinTimeout = requestAnimationFrame(rotateWheel);
+    } else {
+      stopSpin();
+    }
+  };
+
+  rotateWheel();
+}
+
+// Stop the spin and pick a name
+function stopSpin() {
+  cancelAnimationFrame(spinTimeout);
+
+  const index = Math.floor((startAngle / arcSize) % names.length);
+  const selectedName = names[names.length - index - 1]; // Reverse order due to rotation
+  resultText.textContent = `Selected: ${selectedName}`;
+}
+
+spinButton.addEventListener('click', function() {
+  if (names.length > 0) {
+    resultText.textContent = '';
+    spinWheel();
+  }
+});</script>
+</body>
+</html>
