@@ -168,30 +168,38 @@ function drawSegment(index, angle) {
 }
 
 // Spin the wheel
+let spinAngleStart = 0;
+let spinTime = 0;
+let spinTimeTotal = 0;
+
 function spinWheel() {
-  const spinAngle = Math.random() * 10 + 10;
-  const spinTime = 3;
-
-  const rotateWheel = () => {
-    startAngle += spinAngle * Math.PI / 180;
-    drawWheel();
-
-    if (spinTime > 0) {
-      spinTimeout = requestAnimationFrame(rotateWheel);
-    } else {
-      stopSpin();
-    }
-  };
-
+  spinAngleStart = Math.random() * 10 + 10; // Random spin strength
+  spinTime = 0; // Reset spin time
+  spinTimeTotal = Math.random() * 3000 + 2000; // Spin time between 2-5 seconds
   rotateWheel();
 }
 
-// Stop the spin and pick a name
+function rotateWheel() {
+  spinTime += 30; // Increment spin time (30ms for smoother rotation)
+
+  if (spinTime >= spinTimeTotal) {
+    stopSpin();
+    return;
+  }
+
+  const easeOut = (spinTimeTotal - spinTime) / spinTimeTotal; // Easing effect (slows down)
+  const currentSpin = spinAngleStart * easeOut; // Gradually decrease spin speed
+  startAngle += currentSpin * Math.PI / 180; // Update angle
+  drawWheel(); // Redraw the wheel
+
+  spinTimeout = requestAnimationFrame(rotateWheel); // Continue animation
+}
+
 function stopSpin() {
   cancelAnimationFrame(spinTimeout);
 
   const index = Math.floor((startAngle / arcSize) % names.length);
-  const selectedName = names[names.length - index - 1]; // Reverse order due to rotation
+  const selectedName = names[names.length - index - 1]; // Reverse due to rotation direction
   resultText.textContent = `Selected: ${selectedName}`;
 }
 
