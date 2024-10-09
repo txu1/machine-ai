@@ -200,7 +200,7 @@ function stopSpin() {
 
   const index = Math.floor((startAngle / arcSize) % names.length);
   const selectedName = names[names.length - index - 1]; // Reverse due to rotation direction
-  resultText.textContent = `Selected: ${selectedName}`;
+  alert(`Selected: ${selectedName}`);
 }
 
 spinButton.addEventListener('click', function() {
