@@ -259,7 +259,7 @@ function fetchInspirationalQuote() {
       if (data && data.length > 0) {
         const quote = data[0].q;
         const author = data[0].a;
-        quoteContainer.textContent = `"${quote}" - ${author}`;
+        quoteContainer.textContent = `"${q}" - ${a}`;
       } else {
         quoteContainer.textContent = 'Could not load quote. Stay inspired!';
       }
